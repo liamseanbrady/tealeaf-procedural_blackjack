@@ -49,12 +49,13 @@ end
 # VARS
 
 # Create data structure for deck of cards (52)
-# card_deck = [ 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 10, 10, 1,
-#               1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 10, 10, 1,
-#               1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 10, 10, 1,
-#               1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 10, 10, 1]
+card_deck = [ 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 10, 10, 1,
+              1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 10, 10, 1,
+              1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 10, 10, 1,
+              1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 10, 10, 1]
 
-card_deck = [ 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11] 
+player_already_won = false
+player_already_lost = false
 
 # Welcome players to the game
 puts "Welcome to Blackjack"
@@ -76,6 +77,7 @@ if players_total == 21 || dealers_total == 21
   # end the game
 end
 
+puts "Dealer's hand: #{dealers_total}"
 puts "Your hand: #{players_total}"
 
 begin
@@ -84,22 +86,26 @@ begin
   player_decision = gets.chomp
   # If the player chooses hit
   if player_decision.downcase == "hit"
+  # Pick a random card for the player and add it to their score
+    random_card = card_deck.sample
+    card_deck.delete(random_card)
+    players_total += random_card
+    # display player's new score
+    puts "Card total: #{players_total}"
   #  If the sum of the player's cards are more than 21 then the player loses
     if players_total > 21
       # end game and player loses
       puts "#{players_total} - You went bust"
+      player_already_lost = true
+      break
   #  Else If the sum of the player's cards is 21, then the player wins
     elsif players_total == 21
       # end game and player wins
       puts "#{players_total} - You won!"
+      player_already_won = true
+      break
   #  Else If the sum is less than 21, recurse
     elsif players_total < 21
-      # pick a random card
-      random_card = card_deck.sample
-      card_deck.delete(random_card)
-      players_total += random_card
-      # display player's new score
-      puts "Card total: #{players_total}"
       # recurse
     end
   # Else
@@ -110,21 +116,24 @@ begin
   end
 end until player_decision.downcase != "hit"
 
-# Until the sum of the dealer's cards is 17 or more
-begin
-#   The dealer must HIT
-  random_card = card_deck.sample
-  card_deck.delete(random_card)
-  dealers_total += random_card
-  puts "Dealer's current hand: #{dealers_total}"
-#   If the sum of the dealer's cards is now above 21, then the player wins
-  if dealers_total > 21
-    puts "Dealer is bust. Player wins"
-#   Else if the sum of the dealer's cards is 21 exactly, then the dealer wins
-  elsif dealers_total == 21
-    puts "Player lost"
-  end
-end until dealers_total >= 17
+# If the player has not already won or lost
+if !player_already_won || !player_already_lost && dealers_total < 17
+  # Until the sum of the dealer's cards is 17 or more
+  begin
+  #   The dealer must HIT
+    random_card = card_deck.sample
+    card_deck.delete(random_card)
+    dealers_total += random_card
+    puts "Dealer's current hand: #{dealers_total}"
+  #   If the sum of the dealer's cards is now above 21, then the player wins
+    if dealers_total > 21
+      puts "Dealer is bust. Player wins"
+  #   Else if the sum of the dealer's cards is 21 exactly, then the dealer wins
+    elsif dealers_total == 21
+      puts "Player lost"
+    end
+  end until dealers_total >= 17
+end
 
 # Compare the sum of the player's cards to the sum of the dealer's cards. The highest value wins. Display who the winner is.
 if players_total == dealers_total
@@ -190,7 +199,30 @@ puts "Thanks for playing procedural blackjack"
     # We'll put it back inside the main scope inside a loop for the time being. Can be refactored later if need be.
 
 # 6. Currently, the game does not end if the player's score is above 21 or equal to 21
-    # 
+    # See extra conditions below
+
+
+# Extra conditions
+
+  # => After being dealt the initial 2 cards, the player goes first and can choose to either "hit" or "stay".
+
+  # EXTRA - If the player's score is equal to 21 or the dealer's score is equal to 21, we have a winner - end the game.
+
+  # => If the player's cards sum up to be greater than 21, the player has "busted" and lost. 
+  # => If the sum is 21, then the player wins.
+  # => If the sum is less than 21, then the player can choose to "hit" or "stay" again.
+  # => If the player "hits", then repeat above
+  # => If the player stays, then the player's total value is saved.
+
+  # EXTRA - Check if player has already won
+
+  # => It is now the dealer's turn.
+  # => The dealer must keep hitting until she has at least 17.
+  # => If the dealer busts, then the player wins. 
+  # => If the dealer hits 21, then the dealer wins. 
+  # => If the dealer stays, then we compare the sums of the two hands between the player and dealer
+  # => The higher value in the comparison wins. EXTRA - We shouldn't need to check for less than 21 here. Game should have ended before if that were the case.
+
 
 
 
