@@ -49,13 +49,17 @@ end
 # VARS
 
 # Create data structure for deck of cards (52)
-card_deck = [ 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 10, 10, 1,
-              1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 10, 10, 1,
-              1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 10, 10, 1,
-              1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 10, 10, 1]
+# card_deck = [ 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 10, 10, 1,
+#               1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 10, 10, 1,
+#               1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 10, 10, 1,
+#               1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 10, 10, 1]
+
+card_deck = [15, 15, 15, 15, 15, 15]
+binding.pry
 
 player_already_won = false
 player_already_lost = false
+dealer_already_lost = false
 
 # Welcome players to the game
 puts "Welcome to Blackjack"
@@ -73,75 +77,97 @@ deal_first_two_cards(card_deck, dealers_cards)
 dealers_total = 0
 dealers_cards.each{ |card_val| dealers_total += card_val}
 
-if players_total == 21 || dealers_total == 21
-  # end the game
+# Deal with early wins and losses
+
+if players_total == 21
+  player_already_won = true
 end
 
-puts "Dealer's hand: #{dealers_total}"
-puts "Your hand: #{players_total}"
+if players_total > 21
+  player_already_lost = true
+end
 
-begin
-# Ask the player to either HIT or STAY
-  puts "Would you like to hit or stay? (hit/stay)"
-  player_decision = gets.chomp
-  # If the player chooses hit
-  if player_decision.downcase == "hit"
-  # Pick a random card for the player and add it to their score
-    random_card = card_deck.sample
-    card_deck.delete(random_card)
-    players_total += random_card
-    # display player's new score
-    puts "Card total: #{players_total}"
-  #  If the sum of the player's cards are more than 21 then the player loses
-    if players_total > 21
-      # end game and player loses
-      puts "#{players_total} - You went bust"
-      player_already_lost = true
-      break
-  #  Else If the sum of the player's cards is 21, then the player wins
-    elsif players_total == 21
-      # end game and player wins
-      puts "#{players_total} - You won!"
-      player_already_won = true
-      break
-  #  Else If the sum is less than 21, recurse
-    elsif players_total < 21
-      # recurse
+if dealers_total > 21
+  player_already_won = true
+end
+
+
+puts "=> Dealer's hand: #{dealers_total}"
+puts "=> Your hand: #{players_total}"
+
+if !player_already_won && !player_already_lost
+  begin
+  # Ask the player to either HIT or STAY
+    puts "Would you like to hit or stay? (hit/stay)"
+    player_decision = gets.chomp
+    # If the player chooses hit
+    if player_decision.downcase == "hit"
+    # confirm with player that they chose 'hit'
+    puts "You chose hit - hero!"
+    # Pick a random card for the player and add it to their score
+      random_card = card_deck.sample
+      card_deck.delete(random_card)
+      players_total += random_card
+      # display player's new score
+      puts "=> Card total: #{players_total}"
+    #  If the sum of the player's cards are more than 21 then the player loses
+      if players_total > 21
+        # end game and player loses
+        puts "You went bust!"
+        player_already_lost = true
+        break
+    #  Else If the sum of the player's cards is 21, then the player wins
+      elsif players_total == 21
+        # end game and player wins
+        puts "You got! blackjack"
+        player_already_won = true
+        break
+    #  Else If the sum is less than 21, recurse
+      elsif players_total < 21
+        # recurse
+      end
+    # Else
+    else
+    #  save the total value of the player's cards - we're doing this by incrementing each time
+    puts "You chose stay"
     end
-  # Else
-  else
-  #  save the total value of the player's cards - we're doing this by incrementing each time
-  puts "You chose stay - coward!"
-  players_total
-  end
-end until player_decision.downcase != "hit"
+  end until player_decision.downcase != "hit"
+end
 
 # If the player has not already won or lost
-if !player_already_won || !player_already_lost && dealers_total < 17
+if !player_already_won && !player_already_lost && dealers_total < 17
   # Until the sum of the dealer's cards is 17 or more
   begin
   #   The dealer must HIT
     random_card = card_deck.sample
     card_deck.delete(random_card)
     dealers_total += random_card
-    puts "Dealer's current hand: #{dealers_total}"
+    puts "=> Dealer's current hand: #{dealers_total}"
   #   If the sum of the dealer's cards is now above 21, then the player wins
     if dealers_total > 21
-      puts "Dealer is bust. Player wins"
+      puts "Dealer is bust"
+      player_already_won = true
   #   Else if the sum of the dealer's cards is 21 exactly, then the dealer wins
     elsif dealers_total == 21
-      puts "Player lost"
+      puts "Dealer got blackjack!"
+      player_already_lost = true
     end
   end until dealers_total >= 17
 end
 
 # Compare the sum of the player's cards to the sum of the dealer's cards. The highest value wins. Display who the winner is.
-if players_total == dealers_total
-  puts "Tie"
-elsif players_total > dealers_total
+if !player_already_won && !player_already_lost
+  if players_total == dealers_total
+    puts "Tie"
+  elsif players_total > dealers_total
+    puts "Player wins"
+  else
+    puts "Dealer wins"
+  end
+elsif player_already_won
   puts "Player wins"
-else
-  puts "Dealer wins"
+elsif player_already_lost
+  puts "Player loses"
 end
 
 # Goodbye message
@@ -201,6 +227,15 @@ puts "Thanks for playing procedural blackjack"
 # 6. Currently, the game does not end if the player's score is above 21 or equal to 21
     # See extra conditions below
 
+# 7. When deleting the 'random_card' from the array it's deleting all instances of cards of the same value.
+    # Get the index of the random card somehow, and do delete_at for that specific index, instead of delete for that value.
+    # Best way to do this? Is there a method I can use? Is there a sample with index method or similar?
+
+# 7. Need to deal with Aces. Determine whether they should be 1 or 11 based upon the current sum of the players cards.
+    # First thing I notice here is that the players total should always be the sum of the players_cards array. We should be += it with each once we 
+    # get in the loop. We should be adding that card to the players_cards array, then doing each on it and adding them together into players_total 
+    # every time round the loop.
+
 
 # Extra conditions
 
@@ -217,6 +252,9 @@ puts "Thanks for playing procedural blackjack"
   # EXTRA - Check if player has already won
 
   # => It is now the dealer's turn.
+
+  # EXTRA - If the dealer already has 17, don't hit at all - go straight to comparing.
+
   # => The dealer must keep hitting until she has at least 17.
   # => If the dealer busts, then the player wins. 
   # => If the dealer hits 21, then the dealer wins. 
