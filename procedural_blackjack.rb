@@ -60,10 +60,10 @@ def get_players_total(players_cards)
   if ace_count == 0
     return players_total
   elsif players_total < 11 && ace_count == 1
-    puts "You have an ace"
+    puts "#{player_name} has an ace"
     return players_total + 11
   else
-    puts "Wow! You have #{ace_count} aces"
+    puts "#{player_name} has #{ace_count} ace(s)"
     return players_total + ace_count
   end
 end
@@ -89,139 +89,156 @@ def dealers_first_card(dealers_cards)
   end
 end
 
-# VARS
 
-# Create data structure for deck of cards (52)
-card_deck = [ 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 10, 10, [1, 11],
-              1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 10, 10, [1, 11],
-              1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 10, 10, [1, 11],
-              1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 10, 10, [1, 11]]
+# Ask the player for their name
+  puts "Please enter your name to play:"
 
-player_already_won = false
-player_already_lost = false
-dealer_already_lost = false
+# Store the player's name
+player_name = gets.chomp
 
 # Welcome players to the game
-puts "****** Welcome to Blackjack ******"
+  puts "****** Welcome to Blackjack, #{player_name} ******"
 
-# Deal two cards to the player (pick two random cards)
-players_cards = []
-deal_first_two_cards(card_deck, players_cards)
-# Calculate the sum of the player's two cards
-players_total = get_players_total(players_cards)
-# Deal two cards to the dealer
-dealers_cards = []
-deal_first_two_cards(card_deck, dealers_cards)
-# Calculate the sum of the dealer's two cards
-dealers_total = get_dealers_total(dealers_cards)
+begin
+  # VARS
 
-# Deal with early wins and losses
+  # Create data structure for deck of cards (52)
+  card_deck = [ 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 10, 10, [1, 11],
+                1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 10, 10, [1, 11],
+                1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 10, 10, [1, 11],
+                1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 10, 10, [1, 11]]
 
-if players_total == 21
-  player_already_won = true
-  puts "You got blackjack!"
-end
+  player_already_won = false
+  player_already_lost = false
+  dealer_already_lost = false
 
-if players_total > 21
-  player_already_lost = true
-end
+  # Welcome players to the game
+  puts "- - - - - - - -  Starting Game...  - - - - - - - -"
 
-if dealers_total > 21
-  player_already_won = true
-end
+  # Deal two cards to the player (pick two random cards)
+  players_cards = []
+  deal_first_two_cards(card_deck, players_cards)
+  # Calculate the sum of the player's two cards
+  players_total = get_players_total(players_cards)
+  # Deal two cards to the dealer
+  dealers_cards = []
+  deal_first_two_cards(card_deck, dealers_cards)
+  # Calculate the sum of the dealer's two cards
+  dealers_total = get_dealers_total(dealers_cards)
+
+  # Deal with early wins and losses
+
+  if players_total == 21
+    player_already_won = true
+    puts "#{player_name} got blackjack!"
+  end
+
+  if players_total > 21
+    player_already_lost = true
+  end
+
+  if dealers_total > 21
+    player_already_won = true
+  end
 
 
-puts "=> Dealer's first card: #{dealers_first_card(dealers_cards)}"
-puts "=> Your hand: #{players_cards}"
-puts "=> Card total: #{players_total}"
+  puts "=> Dealer's first card: #{dealers_first_card(dealers_cards)}"
+  puts "=> #{player_name}'s' hand: #{players_cards}  Card total: #{players_total}"
 
-if !player_already_won && !player_already_lost
-  begin
-  # Ask the player to either HIT or STAY
-    puts "Would you like to hit or stay? (hit/stay)"
-    player_decision = gets.chomp
-    # If the player chooses hit
-    if player_decision.downcase == "hit"
-    # confirm with player that they chose 'hit'
-    puts "You chose hit - hero!"
-    # Pick a random card for the player and add it to their score
+  if !player_already_won && !player_already_lost
+    begin
+    # Ask the player to either HIT or STAY
+      puts "Would you like to hit or stay? (hit/stay)"
+      player_decision = gets.chomp
+      # If the player chooses hit
+      if player_decision.downcase == "hit"
+      # confirm with player that they chose 'hit'
+      puts "#{player_name} chose hit - hero!"
+      # Pick a random card for the player and add it to their score
+        random_card = card_deck.sample
+        random_card_index = card_deck.index(random_card)
+        card_deck.delete_at(random_card_index)
+        players_cards.push(random_card)
+        players_total = get_players_total(players_cards)
+        # display player's new score
+        puts "=> #{player_name}'s' card is: #{random_card}"
+        puts "=> #{player_name}'s' hand: #{players_cards}  Card total: #{players_total}"
+      #  If the sum of the player's cards are more than 21 then the player loses
+        if players_total > 21
+          # end game and player loses
+          puts "#{player_name} went bust!"
+          player_already_lost = true
+          break
+      #  Else If the sum of the player's cards is 21, then the player wins
+        elsif players_total == 21
+          # end game and player wins
+          puts "#{player_name} got blackjack"
+          player_already_won = true
+          break
+      #  Else If the sum is less than 21, recurse
+        elsif players_total < 21
+          # recurse
+        end
+      # Else
+      else
+      #  save the total value of the player's cards - we're doing this by incrementing each time
+      puts "#{player_name} chose stay"
+      end
+    end until player_decision.downcase != "hit"
+  end
+
+  # If the player has not already won or lost
+  if !player_already_won && !player_already_lost && dealers_total < 17
+    # Until the sum of the dealer's cards is 17 or more
+    begin
+    #   The dealer must HIT
+      puts "=> Dealer's hand: #{dealers_cards}"
       random_card = card_deck.sample
       random_card_index = card_deck.index(random_card)
       card_deck.delete_at(random_card_index)
-      players_cards.push(random_card)
-      players_total = get_players_total(players_cards)
-      # display player's new score
-      puts "=> Your card is: #{random_card}"
-      puts "=> Your hand: #{players_cards}"
-      puts "=> Card total: #{players_total}"
-    #  If the sum of the player's cards are more than 21 then the player loses
-      if players_total > 21
-        # end game and player loses
-        puts "You went bust!"
-        player_already_lost = true
-        break
-    #  Else If the sum of the player's cards is 21, then the player wins
-      elsif players_total == 21
-        # end game and player wins
-        puts "You got blackjack"
+      dealers_cards.push(random_card)
+      dealers_total = get_dealers_total(dealers_cards)
+      puts "=> Dealer's card is: #{random_card}"
+      puts "=> Dealer's current total is: #{dealers_total}"
+    #   If the sum of the dealer's cards is now above 21, then the player wins
+      if dealers_total > 21
+        puts "Dealer is bust"
         player_already_won = true
-        break
-    #  Else If the sum is less than 21, recurse
-      elsif players_total < 21
-        # recurse
+    #   Else if the sum of the dealer's cards is 21 exactly, then the dealer wins
+      elsif dealers_total == 21
+        puts "Dealer got blackjack!"
+        player_already_lost = true
       end
-    # Else
-    else
-    #  save the total value of the player's cards - we're doing this by incrementing each time
-    puts "You chose stay"
-    end
-  end until player_decision.downcase != "hit"
-end
-
-# If the player has not already won or lost
-if !player_already_won && !player_already_lost && dealers_total < 17
-  # Until the sum of the dealer's cards is 17 or more
-  begin
-  #   The dealer must HIT
-    puts "=> Dealer's hand: #{dealers_cards}"
-    random_card = card_deck.sample
-    random_card_index = card_deck.index(random_card)
-    card_deck.delete_at(random_card_index)
-    dealers_cards.push(random_card)
-    dealers_total = get_dealers_total(dealers_cards)
-    puts "=> Dealer's card is: #{random_card}"
-    puts "=> Dealer's current hand: #{dealers_total}"
-  #   If the sum of the dealer's cards is now above 21, then the player wins
-    if dealers_total > 21
-      puts "Dealer is bust"
-      player_already_won = true
-  #   Else if the sum of the dealer's cards is 21 exactly, then the dealer wins
-    elsif dealers_total == 21
-      puts "Dealer got blackjack!"
-      player_already_lost = true
-    end
-  end until dealers_total >= 17
-end
-
-# Compare the sum of the player's cards to the sum of the dealer's cards. The highest value wins. Display who the winner is.
-if !player_already_won && !player_already_lost
-  if players_total == dealers_total
-    puts "Tie"
-  elsif players_total > dealers_total
-    puts "Player wins"
-  else
-    puts "Dealer wins"
+    end until dealers_total >= 17
   end
-elsif player_already_won && player_already_lost
-  puts "Nobody wins"
-elsif player_already_won
-  puts "Player wins"
-elsif player_already_lost
-  puts "Player loses"
-end
+
+  # Compare the sum of the player's cards to the sum of the dealer's cards. The highest value wins. Display who the winner is.
+  if !player_already_won && !player_already_lost
+    if players_total == dealers_total
+      puts "Tie"
+    elsif players_total > dealers_total
+      puts "#{player_name} wins"
+    else
+      puts "Dealer wins"
+    end
+  elsif player_already_won && player_already_lost
+    puts "Nobody wins"
+  elsif player_already_won
+    puts "#{player_name} wins"
+  elsif player_already_lost
+    puts "#{player_name} loses"
+  end
+
+  # Ask player if the want to play again
+  puts "Would you like to play again, #{player_name}? (y/n)"
+
+  # Store the player's answer
+  play_again = gets.chomp
+
+end until play_again.downcase == "n"
 
 # Goodbye message
-puts "****** Thanks for playing procedural blackjack ******"
+puts "****** Thanks for playing procedural blackjack, #{player_name} ******"
 
 
 
