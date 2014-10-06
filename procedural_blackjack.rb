@@ -60,11 +60,11 @@ def get_players_total(players_cards)
   if ace_count == 0
     return players_total
   elsif players_total < 11 && ace_count == 1
-    return players_total + 11
     puts "You have an ace"
+    return players_total + 11
   else
+    puts "Wow! You have #{ace_count} aces"
     return players_total + ace_count
-    puts "Wow! You have #{ace_count} aces}"
   end
 end
 
@@ -81,15 +81,21 @@ def get_dealers_total(dealers_cards)
     return dealers_total
 end
 
+def dealers_first_card(dealers_cards)
+  if dealers_cards.first == [1, 11]
+    return 11
+  else
+    return dealers_cards.first
+  end
+end
+
 # VARS
 
 # Create data structure for deck of cards (52)
-# card_deck = [ 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 10, 10, 1,
-#               1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 10, 10, 1,
-#               1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 10, 10, 1,
-#               1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 10, 10, 1]
-
-card_deck = [ 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 10, 10, [1, 11], [1, 11], [1, 11], [1, 11]]
+card_deck = [ 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 10, 10, [1, 11],
+              1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 10, 10, [1, 11],
+              1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 10, 10, [1, 11],
+              1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 10, 10, [1, 11]]
 
 player_already_won = false
 player_already_lost = false
@@ -103,7 +109,6 @@ players_cards = []
 deal_first_two_cards(card_deck, players_cards)
 # Calculate the sum of the player's two cards
 players_total = get_players_total(players_cards)
-# players_cards.each{ |card_val| players_total += card_val}
 # Deal two cards to the dealer
 dealers_cards = []
 deal_first_two_cards(card_deck, dealers_cards)
@@ -114,6 +119,7 @@ dealers_total = get_dealers_total(dealers_cards)
 
 if players_total == 21
   player_already_won = true
+  puts "You got blackjack!"
 end
 
 if players_total > 21
@@ -125,12 +131,12 @@ if dealers_total > 21
 end
 
 
-puts "=> Dealer's hand: #{dealers_total}"
-puts "=> Your hand: #{players_total}"
+puts "=> Dealer's first card: #{dealers_first_card(dealers_cards)}"
+puts "=> Your hand: #{players_cards}"
+puts "=> Card total: #{players_total}"
 
 if !player_already_won && !player_already_lost
   begin
-    binding.pry
   # Ask the player to either HIT or STAY
     puts "Would you like to hit or stay? (hit/stay)"
     player_decision = gets.chomp
@@ -140,10 +146,13 @@ if !player_already_won && !player_already_lost
     puts "You chose hit - hero!"
     # Pick a random card for the player and add it to their score
       random_card = card_deck.sample
-      card_deck.delete(random_card)
+      random_card_index = card_deck.index(random_card)
+      card_deck.delete_at(random_card_index)
       players_cards.push(random_card)
       players_total = get_players_total(players_cards)
       # display player's new score
+      puts "=> Your card is: #{random_card}"
+      puts "=> Your hand: #{players_cards}"
       puts "=> Card total: #{players_total}"
     #  If the sum of the player's cards are more than 21 then the player loses
       if players_total > 21
@@ -154,7 +163,7 @@ if !player_already_won && !player_already_lost
     #  Else If the sum of the player's cards is 21, then the player wins
       elsif players_total == 21
         # end game and player wins
-        puts "You got! blackjack"
+        puts "You got blackjack"
         player_already_won = true
         break
     #  Else If the sum is less than 21, recurse
@@ -174,10 +183,13 @@ if !player_already_won && !player_already_lost && dealers_total < 17
   # Until the sum of the dealer's cards is 17 or more
   begin
   #   The dealer must HIT
+    puts "=> Dealer's hand: #{dealers_cards}"
     random_card = card_deck.sample
-    card_deck.delete(random_card)
+    random_card_index = card_deck.index(random_card)
+    card_deck.delete_at(random_card_index)
     dealers_cards.push(random_card)
     dealers_total = get_dealers_total(dealers_cards)
+    puts "=> Dealer's card is: #{random_card}"
     puts "=> Dealer's current hand: #{dealers_total}"
   #   If the sum of the dealer's cards is now above 21, then the player wins
     if dealers_total > 21
