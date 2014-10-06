@@ -40,21 +40,24 @@ require "pry"
 
 def deal_first_two_cards(card_deck, cards_array)
   begin
-    random_card = card_deck.sample
-    random_card_index = card_deck.index(random_card)
+    random_suit = card_deck.sample
+    suit_name = random_suit.keys[0]
+    random_cards = random_suit.values[0]
+    random_card = random_cards.sample
+    random_card_index = random_cards.index(random_card)
     card_deck.delete_at(random_card_index)
-    cards_array.push(random_card)
+    cards_array.push([random_card, suit_name])
   end until cards_array.count == 2
 end
 
-def get_players_total(players_cards)
+def get_players_total(players_cards, player_name)
   ace_count = 0
   players_total = 0
   players_cards.each do |card_val|
-    if card_val == [1, 11]
+    if card_val[0] == [1, 11]
       ace_count += 1
     else
-      players_total += card_val
+      players_total += card_val[0]
     end
   end
   if ace_count == 0
@@ -72,20 +75,20 @@ def get_dealers_total(dealers_cards)
   ace_count = 0
   dealers_total = 0
   dealers_cards.each do |card_val|
-    if card_val == [1, 11]
+    if card_val[0] == [1, 11]
       dealers_total += 11
     else
-      dealers_total += card_val
+      dealers_total += card_val[0]
     end
   end
     return dealers_total
 end
 
 def dealers_first_card(dealers_cards)
-  if dealers_cards.first == [1, 11]
+  if dealers_cards[0][0] == [1, 11]
     return 11
   else
-    return dealers_cards.first
+    return dealers_cards[0][0]
   end
 end
 
@@ -94,7 +97,7 @@ end
   puts "Please enter your name to play:"
 
 # Store the player's name
-player_name = gets.chomp
+  player_name = gets.chomp
 
 # Welcome players to the game
   puts "****** Welcome to Blackjack, #{player_name} ******"
@@ -103,10 +106,16 @@ begin
   # VARS
 
   # Create data structure for deck of cards (52)
-  card_deck = [ 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 10, 10, [1, 11],
-                1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 10, 10, [1, 11],
-                1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 10, 10, [1, 11],
-                1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 10, 10, [1, 11]]
+  # card_deck = [ 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 10, 10, [1, 11],
+  #               1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 10, 10, [1, 11],
+  #               1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 10, 10, [1, 11],
+  #               1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 10, 10, [1, 11]]
+
+  card_deck = [ {"hearts" => [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 10, 10, [1, 11]]},
+                {"clubs" => [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 10, 10, [1, 11]]},
+                {"diamonds" => [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 10, 10, [1, 11]]},
+                {"spades" => [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 10, 10, [1, 11]]} ]
+
 
   player_already_won = false
   player_already_lost = false
@@ -119,7 +128,7 @@ begin
   players_cards = []
   deal_first_two_cards(card_deck, players_cards)
   # Calculate the sum of the player's two cards
-  players_total = get_players_total(players_cards)
+  players_total = get_players_total(players_cards, player_name)
   # Deal two cards to the dealer
   dealers_cards = []
   deal_first_two_cards(card_deck, dealers_cards)
@@ -142,7 +151,7 @@ begin
   end
 
 
-  puts "=> Dealer's first card: #{dealers_first_card(dealers_cards)}"
+  puts "=> Dealer's first card: - #{dealers_first_card(dealers_cards)} of #{dealers_cards[0][1]} -"
   puts "=> #{player_name}'s' hand: #{players_cards}  Card total: #{players_total}"
 
   if !player_already_won && !player_already_lost
@@ -152,16 +161,19 @@ begin
       player_decision = gets.chomp
       # If the player chooses hit
       if player_decision.downcase == "hit"
-      # confirm with player that they chose 'hit'
-      puts "#{player_name} chose hit - hero!"
+      # confirm with player that they chose 'hit' - might not need this, so commented it out for now.
+      # puts "#{player_name} chose hit - hero!"
       # Pick a random card for the player and add it to their score
-        random_card = card_deck.sample
-        random_card_index = card_deck.index(random_card)
+        random_suit = card_deck.sample
+        suit_name = random_suit.keys[0]
+        random_cards = random_suit.values[0]
+        random_card = random_cards.sample
+        random_card_index = random_cards.index(random_card)
         card_deck.delete_at(random_card_index)
-        players_cards.push(random_card)
-        players_total = get_players_total(players_cards)
+        players_cards.push([random_card, suit_name])
+        players_total = get_players_total(players_cards, player_name)
         # display player's new score
-        puts "=> #{player_name}'s' card is: #{random_card}"
+        puts "=> #{player_name}'s' card: - #{random_card} of #{suit_name} - "
         puts "=> #{player_name}'s' hand: #{players_cards}  Card total: #{players_total}"
       #  If the sum of the player's cards are more than 21 then the player loses
         if players_total > 21
@@ -193,12 +205,15 @@ begin
     begin
     #   The dealer must HIT
       puts "=> Dealer's hand: #{dealers_cards}"
-      random_card = card_deck.sample
-      random_card_index = card_deck.index(random_card)
+      random_suit = card_deck.sample
+      suit_name = random_suit.keys[0]
+      random_cards = random_suit.values[0]
+      random_card = random_cards.sample
+      random_card_index = random_cards.index(random_card)
       card_deck.delete_at(random_card_index)
-      dealers_cards.push(random_card)
+      dealers_cards.push([random_card, suit_name])
       dealers_total = get_dealers_total(dealers_cards)
-      puts "=> Dealer's card is: #{random_card}"
+      puts "=> Dealer's card is: #{random_card} of #{suit_name}"
       puts "=> Dealer's current total is: #{dealers_total}"
     #   If the sum of the dealer's cards is now above 21, then the player wins
       if dealers_total > 21
@@ -210,6 +225,9 @@ begin
         player_already_lost = true
       end
     end until dealers_total >= 17
+  else
+    puts "=> Dealer's hand: #{dealers_cards}"
+    puts "Dealer's total is: #{dealers_total}"
   end
 
   # Compare the sum of the player's cards to the sum of the dealer's cards. The highest value wins. Display who the winner is.
