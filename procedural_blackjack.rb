@@ -44,7 +44,7 @@ def deal_card(card_deck, cards_array)
   random_cards = random_suit.values.first
   random_card = random_cards.sample
   random_card_index = random_cards.index(random_card)
-  card_deck.delete_at(random_card_index)
+  random_cards.delete_at(random_card_index)
   cards_array.push({suit: suit_name, value: random_card})
 end
 
@@ -154,16 +154,21 @@ end
 begin
   # VARS
 
-  # Create data structure for deck of cards (52)
+  # Create data structure for deck of cards (52) (this is the previous data structure that was used for the basic implementation)
   # card_deck = [ 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 10, 10, [1, 11],
   #               1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 10, 10, [1, 11],
   #               1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 10, 10, [1, 11],
   #               1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 10, 10, [1, 11]]
 
+ # Create data structure for deck of cards (52)
   card_deck = [ {"Hearts" => [1, 2, 3, 4, 5, 6, 7, 8, 9, "Jack", "Queen", "King", "Ace"]},
                 {"Clubs" => [1, 2, 3, 4, 5, 6, 7, 8, 9, "Jack", "Queen", "King", "Ace"]},
                 {"Diamonds" => [1, 2, 3, 4, 5, 6, 7, 8, 9, "Jack", "Queen", "King", "Ace"]},
-                {"Spades" => [1, 2, 3, 4, 5, 6, 7, 8, 9, "Jack", "Queen", "King", "Ace"]} ]
+                {"Spades" => [1, 2, 3, 4, 5, 6, 7, 8, 9, "Jack", "Queen", "King", "Ace"]},
+                {"Hearts" => [1, 2, 3, 4, 5, 6, 7, 8, 9, "Jack", "Queen", "King", "Ace"]},
+                {"Clubs" => [1, 2, 3, 4, 5, 6, 7, 8, 9, "Jack", "Queen", "King", "Ace"]},
+                {"Diamonds" => [1, 2, 3, 4, 5, 6, 7, 8, 9, "Jack", "Queen", "King", "Ace"]},
+                {"Spades" => [1, 2, 3, 4, 5, 6, 7, 8, 9, "Jack", "Queen", "King", "Ace"]}, ]
 
   player_won = false
   player_lost = false
@@ -212,7 +217,7 @@ begin
         random_cards = random_suit.values.first
         random_card = random_cards.sample
         random_card_index = random_cards.index(random_card)
-        card_deck.delete_at(random_card_index)
+        random_cards.delete_at(random_card_index)
         players_cards.push({suit: suit_name, value: random_card})
         players_total = get_players_total(players_cards, player_name)
 
@@ -255,7 +260,7 @@ begin
       random_cards = random_suit.values.first
       random_card = random_cards.sample
       random_card_index = random_cards.index(random_card)
-      card_deck.delete_at(random_card_index)
+      random_cards.delete_at(random_card_index)
       dealers_cards.push({suit: suit_name, value: random_card})
       dealers_total = get_dealers_total(dealers_cards)
 
@@ -452,6 +457,9 @@ puts " "
 
 # 10. Currently, if the player scores 21 (no matter how many cards they have), the player automatically wins.
     # We need to check if they have 21 with 2 cards and only then say that the player has autmatically won.
+
+# 11. How would adding another deck work?
+    # Can just add another 'deck' model inside the card_deck array. Sample would take from b
 
 
 # Extra conditions
