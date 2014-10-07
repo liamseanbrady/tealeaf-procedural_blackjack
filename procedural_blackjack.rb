@@ -151,7 +151,7 @@ end
 # Store the player's name
   player_name = gets.chomp
 
-
+# This begins the loop for the whole game.
 begin
 
 # VARS
@@ -344,7 +344,7 @@ puts " "
       # break
 
 # 5. Problem with variable scope when making player's decisions
-    # I want they player's total to be incremented inside the method, then be available with the same value at the main scope.
+    # I want the player's total to be incremented inside the method, then be available with the same value at the main scope.
     # We'll put it back inside the main scope inside a loop for the time being. Can be refactored later if need be.
 
 # 6. Currently, the game does not end if the player's score is above 21 or equal to 21
