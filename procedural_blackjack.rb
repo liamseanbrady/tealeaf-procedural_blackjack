@@ -34,24 +34,22 @@
 
 # Pseudo-code:
 
-require "pry"
-
 # METHODS
 
 def deal_card(card_deck, cards_array)
   random_suit = card_deck.sample
-  suit_name = random_suit.keys.first
   random_cards = random_suit.values.first
   random_card = random_cards.sample
   random_card_index = random_cards.index(random_card)
   random_cards.delete_at(random_card_index)
+  suit_name = random_suit.keys.first
   cards_array.push({suit: suit_name, value: random_card})
 end
 
 def deal_first_two_cards(card_deck, cards_array)
-  begin
+  2.times do
     deal_card(card_deck, cards_array)
-  end until cards_array.count == 2
+  end
 end
 
 def get_players_total(players_cards, player_name)
@@ -69,10 +67,8 @@ def get_players_total(players_cards, player_name)
   if ace_count == 0
     return players_total
   elsif players_total < 11 && ace_count == 1
-    puts "#{player_name} has an ace"
     return players_total + 11
   else
-    puts "#{player_name} has #{ace_count} ace(s)"
     return players_total + ace_count
   end
 end
@@ -120,13 +116,13 @@ def display_total_for(total, name)
   puts " "
 end
 
-def display_ui_for(name, cards, total)
+def display_current_hand_for(name, cards, total)
   display_header_for(name)
   display_hand_for(cards)
   display_total_for(total, name)
 end
 
-def display_press_key_to(msg)
+def display_press_key_with_msg(msg)
   puts "Press any key to #{msg}..."
   gets.chomp
 end
@@ -159,7 +155,7 @@ begin
   #               1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 10, 10, [1, 11],
   #               1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 10, 10, [1, 11]]
 
- # Create data structure for 2 decks of cards (52 cards in each)
+ # Create data structure for 2 decks of cards (52 cards in each) - Runs in constant time, I think.
   card_deck = [ {"Hearts" => [1, 2, 3, 4, 5, 6, 7, 8, 9, "Jack", "Queen", "King", "Ace"]},
                 {"Clubs" => [1, 2, 3, 4, 5, 6, 7, 8, 9, "Jack", "Queen", "King", "Ace"]},
                 {"Diamonds" => [1, 2, 3, 4, 5, 6, 7, 8, 9, "Jack", "Queen", "King", "Ace"]},
@@ -168,6 +164,16 @@ begin
                 {"Clubs" => [1, 2, 3, 4, 5, 6, 7, 8, 9, "Jack", "Queen", "King", "Ace"]},
                 {"Diamonds" => [1, 2, 3, 4, 5, 6, 7, 8, 9, "Jack", "Queen", "King", "Ace"]},
                 {"Spades" => [1, 2, 3, 4, 5, 6, 7, 8, 9, "Jack", "Queen", "King", "Ace"]}, ]
+
+  # Create data structure for 2 decks of cards (52 cards in each) - PROGRAMMTICALLLY CREATED. Runs in theta N time. Less efficient, but can add numerous decks easily if required.
+  # cards = [1, 2, 3, 4, 5, 6, 7, 8, 9, "Jack", "Queen", "King", "Ace"]
+  # suits = ["Hearts", "Clubs", "Diamonds", "Spades"]
+  # card_deck = []
+  # 2.times do
+  #   suits.each do |suit|
+  #     card_deck.push({suit => cards})
+  #   end
+  # end
 
   player_won = false
   player_lost = false
@@ -189,18 +195,17 @@ begin
   # Calculate the sum of the dealer's two cards
   dealers_total = get_dealers_total(dealers_cards)
 
+  # Display initial state for Dealer and Player
+  display_header_for("Dealer")
+  display_dealers_first_card(dealers_cards)
+
+  display_current_hand_for(player_name, players_cards, players_total)
+
   # Deal with early wins and losses
   if players_total == 21
     player_won = true
     puts "#{player_name} got Blackjack!"
   end
-
-  # Display initial state for Dealer and Player
-  display_header_for("Dealer")
-  display_dealers_first_card(dealers_cards)
-
-  display_ui_for(player_name, players_cards, players_total)
-
 
   if !player_won
     begin
@@ -213,7 +218,7 @@ begin
         deal_card(card_deck, players_cards)
         players_total = get_players_total(players_cards, player_name)
         # display Player's new score
-        display_ui_for(player_name, players_cards, players_total)
+        display_current_hand_for(player_name, players_cards, players_total)
       #  If the sum of the Player's cards are more than 21 then the player loses
         if players_total > 21
           # end game and player loses
@@ -226,22 +231,28 @@ begin
   end
 
   # Ask the Player to perform an action to see the Dealer's hidden card
-  display_press_key_to("reveal the Dealer's hidden card")
+  display_press_key_with_msg("reveal the Dealer's hidden card")
 
-  # If the player has not already won or lost
+  # If the dealer got Blackjack, AND the Player didn't get Blackjack, then tell the Player now that the player got Blackjack
+  if dealers_total == 21 && !player_won
+    player_lost = true
+    puts "The Dealer got Blackjack!"
+  end
+
+  # If the player has not already won or lost and the Dealer's total is less than 17
   if !player_won && !player_lost && dealers_total < 17
     # Display the Dealer's cards so the player knows what the Dealer's second card was
-    display_ui_for("Dealer", dealers_cards, dealers_total)
+    display_current_hand_for("Dealer", dealers_cards, dealers_total)
     # Until the sum of the dealer's cards is 17 or more
     begin
-    # Ask the player to perform an action to continue the loop.
-    display_press_key_to("allow the Dealer to move")
-    #   The dealer must HIT
+      # Ask the player to perform an action to continue the loop.
+      display_press_key_with_msg("allow the Dealer to take a card")
+      # The dealer must Hit
       deal_card(card_deck, dealers_cards)
       dealers_total = get_dealers_total(dealers_cards)
       # display Dealer's new score
-      display_ui_for("Dealer", dealers_cards, dealers_total)
-    #   If the sum of the dealer's cards is now above 21, then the player wins
+      display_current_hand_for("Dealer", dealers_cards, dealers_total)
+      # If the sum of the dealer's cards is now above 21, then the player wins
       if dealers_total > 21
         display_bust_msg_for("The Dealer")
         player_won = true
@@ -250,11 +261,11 @@ begin
       end
     end until dealers_total >= 17
   else
-    display_ui_for("Dealer", dealers_cards, dealers_total)
+    display_current_hand_for("Dealer", dealers_cards, dealers_total)
   end
 
   # Ask the Player to perform an action to see the result
-  display_press_key_to("see the result")
+  display_press_key_with_msg("see the result")
 
   # Compare the sum of the player's cards to the sum of the dealer's cards. The highest value wins. Display who the winner is.
   result =
@@ -282,7 +293,6 @@ begin
 
   display_result(player_name, result)
 
-
   # Ask player if the want to play again
   puts "Would you like to play again, #{player_name}? (y/n)"
 
@@ -297,8 +307,6 @@ system "clear"
 # Goodbye message
 puts "****** Thanks for playing procedural blackjack, #{player_name} ******"
 puts " "
-
-
 
 
 
@@ -320,8 +328,8 @@ puts " "
         # Although, 2d array with index 0 containing name and index 1 containing value, kind of makes sense.
         # Thinking of more complex parts, it might be difficult to map Ace to 1 and 11. Not true actually, value of Ace could be array with 2 items (1, 11)
         # Are the suits really relevant here? Struggling to find answer as to why they would be. Just need 4 sets of (1-9, and 3 sets of 10s).
-        # Array is better choice. In the procedural game, I'll hedge my bets with array as it fits the purpose and no more, which is better
-        # than a complicated hash (which isn't really any more useful).
+        # Array is better choice. In the procedural game, I'll hedge my bets with array as it fits the purpose and no more, which is better than a complicated hash (which isn't really any more useful).
+        # Eventually changed to using an array with nested hashes, as this was required for the 'bonus' of adding suits into the program.
 
 # 2. How to deal with Aces?
     # We might have a problem with the aces, how to identify them as aces?
@@ -461,6 +469,54 @@ puts " "
   #   end
 
   #   display_result(player_name, result)
+
+# 13. How do we clean up the logic and loop for the Player's turn?
+    # Let's analyze the code below to see what we can do. On analysis, the loop is actually reasonably efficient.
+  #  if !player_won
+  #   begin
+  #   # Ask the Player to either HIT or STAY
+  #     puts "Would you like to Hit or Stay? (h/s)"
+  #     player_decision = gets.chomp
+  #     # If the Player chooses hit
+  #     if player_decision.downcase == "h"
+  #     # Pick a random card for the Player and add it to their score
+  #       deal_card(card_deck, players_cards)
+  #       players_total = get_players_total(players_cards, player_name)
+  #       # display Player's new score
+  #       display_current_hand_for(player_name, players_cards, players_total)
+  #     #  If the sum of the Player's cards are more than 21 then the player loses
+  #       if players_total > 21
+  #         # end game and player loses
+  #         display_bust_msg_for(player_name)
+  #         player_lost = true
+  #         break
+  #       end
+  #     end
+  #   end until player_decision.downcase != "h"
+  # end
+
+# 14. Can we create the card_deck programmatically? Let's the solution out and see if it works.
+  #  Let's have a look at the code and see what we can do to re-create it programmatically:
+     # Create data structure for 2 decks of cards (52 cards in each)
+    # card_deck = [ {"Hearts" => [1, 2, 3, 4, 5, 6, 7, 8, 9, "Jack", "Queen", "King", "Ace"]},
+    #               {"Clubs" => [1, 2, 3, 4, 5, 6, 7, 8, 9, "Jack", "Queen", "King", "Ace"]},
+    #               {"Diamonds" => [1, 2, 3, 4, 5, 6, 7, 8, 9, "Jack", "Queen", "King", "Ace"]},
+    #               {"Spades" => [1, 2, 3, 4, 5, 6, 7, 8, 9, "Jack", "Queen", "King", "Ace"]},
+    #               {"Hearts" => [1, 2, 3, 4, 5, 6, 7, 8, 9, "Jack", "Queen", "King", "Ace"]},
+    #               {"Clubs" => [1, 2, 3, 4, 5, 6, 7, 8, 9, "Jack", "Queen", "King", "Ace"]},
+    #               {"Diamonds" => [1, 2, 3, 4, 5, 6, 7, 8, 9, "Jack", "Queen", "King", "Ace"]},
+    #               {"Spades" => [1, 2, 3, 4, 5, 6, 7, 8, 9, "Jack", "Queen", "King", "Ace"]}, ]
+  # This didn't work. The card_deck array was exactly the same but seemed to processed differently. Interesting in itself? Memory allocation different for this?
+
+
+# cards = [1, 2, 3, 4, 5, 6, 7, 8, 9, "Jack", "Queen", "King", "Ace"]
+# suits = ["Hearts", "Clubs", "Diamonds", "Spades"]
+# card_deck = []
+# 2.times do
+#   suits.each do |suit|
+#     card_deck.push({suit => cards})
+#   end
+# end
 
 # Extra conditions
 
