@@ -140,6 +140,11 @@ def display_result(player_name, msg)
   puts ""
 end
 
+
+
+# MAIN
+
+
 # Ask the player for their name
   puts "Please enter your name to play:"
 
@@ -233,7 +238,7 @@ begin
   # Ask the Player to perform an action to see the Dealer's hidden card
   display_press_key_with_msg("reveal the Dealer's hidden card")
 
-  # If the dealer got Blackjack, AND the Player didn't get Blackjack, then tell the Player now that the player got Blackjack
+  # If the dealer got Blackjack, AND the Player didn't get Blackjack, then tell the Player now that the Dealer got Blackjack
   if dealers_total == 21 && !player_won
     player_lost = true
     puts "The Dealer got Blackjack!"
