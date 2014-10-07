@@ -54,18 +54,6 @@ def deal_first_two_cards(card_deck, cards_array)
   end until cards_array.count == 2
 end
 
-# def deal_first_two_cards(card_deck, cards_array)
-#   begin
-#     random_suit = card_deck.sample
-#     suit_name = random_suit.keys.first
-#     random_cards = random_suit.values.first
-#     random_card = random_cards.sample
-#     random_card_index = random_cards.index(random_card)
-#     card_deck.delete_at(random_card_index)
-#     cards_array.push({suit: suit_name, value: random_card})
-#   end until cards_array.count == 2
-# end
-
 def get_players_total(players_cards, player_name)
   ace_count = 0
   players_total = 0
@@ -137,6 +125,11 @@ def display_press_key_to(msg)
   gets.chomp
 end
 
+def display_bust_msg_for(name)
+  puts "#{name} went bust!"
+  puts ""
+end
+
 def display_result(player_name, msg)
   puts ""
   puts "-  -  -  -  -  -  Result  -  -  -  -  -  -"
@@ -160,7 +153,7 @@ begin
   #               1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 10, 10, [1, 11],
   #               1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 10, 10, [1, 11]]
 
- # Create data structure for deck of cards (52)
+ # Create data structure for 2 decks of cards (52 cards in each)
   card_deck = [ {"Hearts" => [1, 2, 3, 4, 5, 6, 7, 8, 9, "Jack", "Queen", "King", "Ace"]},
                 {"Clubs" => [1, 2, 3, 4, 5, 6, 7, 8, 9, "Jack", "Queen", "King", "Ace"]},
                 {"Diamonds" => [1, 2, 3, 4, 5, 6, 7, 8, 9, "Jack", "Queen", "King", "Ace"]},
@@ -200,6 +193,9 @@ begin
   display_header_for("Dealer")
   display_dealers_first_card(dealers_cards)
 
+
+# THIS CAN BE EXTRACTED AS DISPLAY_UI_WITH_INPUT(PARAMS) OR SOMETHING AND USED FOR PLAYER AND DEALER
+
   display_header_for(player_name)
   display_hand_for(players_cards)
   display_total_for(players_total, player_name)
@@ -212,13 +208,8 @@ begin
       # If the player chooses hit
       if player_decision.downcase == "h"
       # Pick a random card for the player and add it to their score
-        random_suit = card_deck.sample
-        suit_name = random_suit.keys.first
-        random_cards = random_suit.values.first
-        random_card = random_cards.sample
-        random_card_index = random_cards.index(random_card)
-        random_cards.delete_at(random_card_index)
-        players_cards.push({suit: suit_name, value: random_card})
+        deal_card(card_deck, players_cards)
+
         players_total = get_players_total(players_cards, player_name)
 
         # display player's new score
@@ -228,8 +219,7 @@ begin
       #  If the sum of the player's cards are more than 21 then the player loses
         if players_total > 21
           # end game and player loses
-          puts "#{player_name} went bust!"
-          puts ""
+          display_bust_msg_for(player_name)
           player_lost = true
           break
         end
@@ -255,13 +245,8 @@ begin
     display_press_key_to("allow the Dealer to move")
 
     #   The dealer must HIT
-      random_suit = card_deck.sample
-      suit_name = random_suit.keys.first
-      random_cards = random_suit.values.first
-      random_card = random_cards.sample
-      random_card_index = random_cards.index(random_card)
-      random_cards.delete_at(random_card_index)
-      dealers_cards.push({suit: suit_name, value: random_card})
+      deal_card(card_deck, dealers_cards)
+
       dealers_total = get_dealers_total(dealers_cards)
 
       display_header_for("Dealer")
@@ -269,9 +254,10 @@ begin
       display_total_for(dealers_total, "Dealer")
     #   If the sum of the dealer's cards is now above 21, then the player wins
       if dealers_total > 21
-        puts "Dealer went bust!"
-        puts ""
+        display_bust_msg_for("The Dealer")
         player_won = true
+      elsif dealers_cards.count == 2 && dealers_total == 21
+        player_lost = true
       end
     end until dealers_total >= 17
   else
@@ -284,35 +270,31 @@ begin
   display_press_key_to("see the result")
 
   # Compare the sum of the player's cards to the sum of the dealer's cards. The highest value wins. Display who the winner is.
+  result =
   if !player_won && !player_lost
     if players_total == dealers_total
-      display_result(player_name, "tied with the Dealer")
+      "tied with the Dealer"
     elsif players_total > dealers_total
-      display_result(player_name, "won because his/her card total was higher")
+      "won because his/her card total was higher"
     else
-      display_result(player_name, "lost because his/her card total was lower")
+      "lost because his/her card total was lower"
     end
   elsif player_won
     if players_total == 21
-      if players_cards.count == 2
-        display_result(player_name, "got Blackjack!")
-      else
-        display_result(player_name, "won!")
-      end
+      "got Blackjack!"
     else
-      display_result(player_name, "won! Dealer went bust!")
+      "won! Dealer went bust!"
     end
   elsif player_lost
-    if dealers_cards.count == 2
-      if dealers_total == 21
-        display_result(player_name, "lost. Dealer got Blackjack!")
-      else
-        display_result(player_name, "went bust and lost!")
-      end
+    if players_total > 21
+      "went bust and lost!"
     else
-      display_result(player_name, "lost...")
+      "lost. Dealer got Blackjack!"
     end
   end
+
+  display_result(player_name, result)
+
 
   # Ask player if the want to play again
   puts "Would you like to play again, #{player_name}? (y/n)"
@@ -459,8 +441,39 @@ puts " "
     # We need to check if they have 21 with 2 cards and only then say that the player has autmatically won.
 
 # 11. How would adding another deck work?
-    # Can just add another 'deck' model inside the card_deck array. Sample would take from b
+    # Can just add another 'deck' model inside the card_deck array.
 
+# 12. Possible redundant code in the check for the winner. Let's paste code here to analyze.
+  #   result =
+  #   if !player_won && !player_lost
+  #     if players_total == dealers_total
+  #       "tied with the Dealer"
+  #     elsif players_total > dealers_total
+  #       "won because his/her card total was higher"
+  #     else
+  #       "lost because his/her card total was lower"
+  #     end                                                         <= If the player has not won or lost, then simply compare players total to dealer's total and either one wins or they tie.
+  #   elsif player_won
+  #     if players_total == 21          X
+  #       if players_cards.count == 2   Ident this line to be only one layer of nesting in the elsif parent.
+  #         "got Blackjack!"
+  #       else                          X
+  #         "won!"                      X
+  #       end                           X
+  #     else                            
+  #       "won! Dealer went bust!"      
+  #     end                                                         <= If the player has won, means player got blackjack, or dealer went bust
+  #   elsif player_lost
+  #     if dealers_cards.count == 2     X
+  #       if !dealers_total == 21
+  #         "went bust and lost!"
+  #       else
+  #         "lost. Dealer got Blackjack!"
+  #       end
+  #     end                             X
+  #   end
+
+  #   display_result(player_name, result)
 
 # Extra conditions
 
