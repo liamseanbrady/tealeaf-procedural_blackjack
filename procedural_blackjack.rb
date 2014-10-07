@@ -38,23 +38,39 @@ require "pry"
 
 # METHODS
 
+def deal_card(card_deck, cards_array)
+  random_suit = card_deck.sample
+  suit_name = random_suit.keys.first
+  random_cards = random_suit.values.first
+  random_card = random_cards.sample
+  random_card_index = random_cards.index(random_card)
+  card_deck.delete_at(random_card_index)
+  cards_array.push({suit: suit_name, value: random_card})
+end
+
 def deal_first_two_cards(card_deck, cards_array)
   begin
-    random_suit = card_deck.sample
-    suit_name = random_suit.keys.first
-    random_cards = random_suit.values.first
-    random_card = random_cards.sample
-    random_card_index = random_cards.index(random_card)
-    card_deck.delete_at(random_card_index)
-    cards_array.push({suit: suit_name, value: random_card})
+    deal_card(card_deck, cards_array)
   end until cards_array.count == 2
 end
+
+# def deal_first_two_cards(card_deck, cards_array)
+#   begin
+#     random_suit = card_deck.sample
+#     suit_name = random_suit.keys.first
+#     random_cards = random_suit.values.first
+#     random_card = random_cards.sample
+#     random_card_index = random_cards.index(random_card)
+#     card_deck.delete_at(random_card_index)
+#     cards_array.push({suit: suit_name, value: random_card})
+#   end until cards_array.count == 2
+# end
 
 def get_players_total(players_cards, player_name)
   ace_count = 0
   players_total = 0
   players_cards.each do |card|
-    if card[:value] == [1, 11]
+    if card[:value] == "Ace"
       ace_count += 1
     elsif card[:value] == "Jack" || card[:value] == "King" || card[:value] == "Queen"
       players_total += 10
@@ -77,7 +93,7 @@ def get_dealers_total(dealers_cards)
   ace_count = 0
   dealers_total = 0
   dealers_cards.each do |card|
-    if card[:value] == [1, 11]
+    if card[:value] == "Ace"
       dealers_total += 11
     elsif card[:value] == "Jack" || card[:value] == "King" || card[:value] == "Queen"
       dealers_total += 10
@@ -89,11 +105,39 @@ def get_dealers_total(dealers_cards)
 end
 
 def dealers_first_card(dealers_cards)
-  if dealers_cards.first[:value] == [1, 11]
+  if dealers_cards.first[:value] == "Ace"
     return 11
   else
     return dealers_cards.first[:value]
   end
+end
+
+def display_header_for(title)
+    puts " "
+    puts "-  -  -  -  -  #{title}'s Hand  -  -  -  -  -"
+end
+
+def display_dealers_first_card(dealers_cards)
+  puts "#{dealers_cards.first[:value]} of #{dealers_cards.first[:suit]}"
+  puts "This card is hidden"
+end
+
+def display_hand_for(cards)
+  cards.each{ |card| puts "#{card[:value]} of #{card[:suit]}" }
+end
+
+def display_total_for(total, name)
+  puts " "
+  puts "#{name}'s total: #{total}"
+  puts " "
+end
+
+def display_result(player_name, msg)
+  puts ""
+  puts "-  -  -  -  -  -  Result  -  -  -  -  -  -"
+  puts ""
+  puts "********** #{player_name} #{msg} **********"
+  puts ""
 end
 
 # Ask the player for their name
@@ -111,10 +155,10 @@ begin
   #               1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 10, 10, [1, 11],
   #               1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 10, 10, [1, 11]]
 
-  card_deck = [ {"hearts" => [1, 2, 3, 4, 5, 6, 7, 8, 9, "Jack", "Queen", "King", [1, 11]]},
-                {"clubs" => [1, 2, 3, 4, 5, 6, 7, 8, 9, "Jack", "Queen", "King", [1, 11]]},
-                {"diamonds" => [1, 2, 3, 4, 5, 6, 7, 8, 9, "Jack", "Queen", "King", [1, 11]]},
-                {"spades" => [1, 2, 3, 4, 5, 6, 7, 8, 9, "Jack", "Queen", "King", [1, 11]]} ]
+  card_deck = [ {"Hearts" => [1, 2, 3, 4, 5, 6, 7, 8, 9, "Jack", "Queen", "King", "Ace"]},
+                {"Clubs" => [1, 2, 3, 4, 5, 6, 7, 8, 9, "Jack", "Queen", "King", "Ace"]},
+                {"Diamonds" => [1, 2, 3, 4, 5, 6, 7, 8, 9, "Jack", "Queen", "King", "Ace"]},
+                {"Spades" => [1, 2, 3, 4, 5, 6, 7, 8, 9, "Jack", "Queen", "King", "Ace"]} ]
 
 
   player_already_won = false
@@ -145,8 +189,12 @@ begin
     puts "#{player_name} got blackjack!"
   end
 
-  puts "=> Dealer's first card: - #{dealers_first_card(dealers_cards)} of #{dealers_cards.first[:suit]} -"
-  puts "=> #{player_name}'s' hand: #{players_cards}  Card total: #{players_total}"
+  display_header_for("Dealer")
+  display_dealers_first_card(dealers_cards)
+
+  display_header_for(player_name)
+  display_hand_for(players_cards)
+  display_total_for(players_total, player_name)
 
   if !player_already_won && !player_already_lost
     begin
@@ -155,8 +203,6 @@ begin
       player_decision = gets.chomp
       # If the player chooses hit
       if player_decision.downcase == "hit"
-      # confirm with player that they chose 'hit' - might not need this, so commented it out for now.
-      # puts "#{player_name} chose hit - hero!"
       # Pick a random card for the player and add it to their score
         random_suit = card_deck.sample
         suit_name = random_suit.keys.first
@@ -168,8 +214,9 @@ begin
         players_total = get_players_total(players_cards, player_name)
 
         # display player's new score
-        puts "=> #{player_name}'s' card: - #{random_card} of #{suit_name} - "
-        puts "=> #{player_name}'s' hand: #{players_cards}  Card total: #{players_total}"
+        display_header_for(player_name)
+        display_hand_for(players_cards)
+        display_total_for(players_total, player_name)
       #  If the sum of the player's cards are more than 21 then the player loses
         if players_total > 21
           # end game and player loses
@@ -189,17 +236,27 @@ begin
       # Else
       else
       #  save the total value of the player's cards - we're doing this by incrementing each time
-      puts "#{player_name} chose stay"
       end
     end until player_decision.downcase != "hit"
   end
 
+  # Ask the Player to perform an action to see the Dealer's hidden card
+  puts "Press any key to reveal the Dealer's hidden card..."
+  gets.chomp
+
   # If the player has not already won or lost
   if !player_already_won && !player_already_lost && dealers_total < 17
+    # Display the Dealer's cards so the player knows what the Dealer's second card was
+    display_header_for("Dealer")
+    display_hand_for(dealers_cards)
+    display_total_for(dealers_total, "Dealer")
     # Until the sum of the dealer's cards is 17 or more
     begin
+    # Ask the player to perform an action to continue the loop.
+    puts "Press any key to allow Dealer to move..."
+    gets.chomp
+
     #   The dealer must HIT
-      puts "=> Dealer's hand: #{dealers_cards}"
       random_suit = card_deck.sample
       suit_name = random_suit.keys.first
       random_cards = random_suit.values.first
@@ -209,8 +266,9 @@ begin
       dealers_cards.push({suit: suit_name, value: random_card})
       dealers_total = get_dealers_total(dealers_cards)
 
-      puts "=> Dealer's card is: #{random_card} of #{suit_name}"
-      puts "=> Dealer's current total is: #{dealers_total}"
+      display_header_for("Dealer")
+      display_hand_for(dealers_cards)
+      display_total_for(dealers_total, "Dealer")
     #   If the sum of the dealer's cards is now above 21, then the player wins
       if dealers_total > 21
         puts "Dealer is bust"
@@ -222,25 +280,31 @@ begin
       end
     end until dealers_total >= 17
   else
-    puts "=> Dealer's hand: #{dealers_cards}"
-    puts "Dealer's total is: #{dealers_total}"
+    display_header_for("Dealer")
+    display_hand_for(dealers_cards)
+    display_total_for(dealers_total, "Dealer")
   end
+
+  # Ask the Player to perform an action to see the result
+  puts "Press any key to see the result..."
+  gets.chomp
 
   # Compare the sum of the player's cards to the sum of the dealer's cards. The highest value wins. Display who the winner is.
   if !player_already_won && !player_already_lost
     if players_total == dealers_total
-      puts "Tie"
+      display_result(player_name, "tied with the Dealer")
     elsif players_total > dealers_total
-      puts "#{player_name} wins"
+      display_result(player_name, "won!")
     else
-      puts "Dealer wins"
+      display_result(player_name, "lost...")
     end
+  # Not sure why this is here???
   elsif player_already_won && player_already_lost
     puts "Nobody wins"
   elsif player_already_won
-    puts "#{player_name} wins"
+    display_result(player_name, "won!")
   elsif player_already_lost
-    puts "#{player_name} loses"
+    display_result(player_name, "lost...")
   end
 
   # Ask player if the want to play again
