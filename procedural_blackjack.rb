@@ -36,6 +36,12 @@
 
 # METHODS
 
+def deal_first_two_cards(card_deck, cards_array)
+  2.times do
+    deal_card(card_deck, cards_array)
+  end
+end
+
 def deal_card(card_deck, cards_array)
   random_suit = card_deck.sample
   random_cards = random_suit.values.first
@@ -44,12 +50,6 @@ def deal_card(card_deck, cards_array)
   random_cards.delete_at(random_card_index)
   suit_name = random_suit.keys.first
   cards_array.push({suit: suit_name, value: random_card})
-end
-
-def deal_first_two_cards(card_deck, cards_array)
-  2.times do
-    deal_card(card_deck, cards_array)
-  end
 end
 
 def get_players_total(players_cards, player_name)
@@ -96,14 +96,20 @@ def dealers_first_card(dealers_cards)
   end
 end
 
-def display_header_for(name)
-    puts " "
-    puts "-  -  -  -  -  #{name}'s Hand  -  -  -  -  -"
-end
-
 def display_dealers_first_card(dealers_cards)
   puts "#{dealers_cards.first[:value]} of #{dealers_cards.first[:suit]}"
   puts "This card is hidden"
+end
+
+def display_current_hand_for(name, cards, total)
+  display_header_for(name)
+  display_hand_for(cards)
+  display_total_for(total, name)
+end
+
+def display_header_for(name)
+    puts " "
+    puts "-  -  -  -  -  #{name}'s Hand  -  -  -  -  -"
 end
 
 def display_hand_for(cards)
@@ -114,12 +120,6 @@ def display_total_for(total, name)
   puts " "
   puts "#{name}'s total: #{total}"
   puts " "
-end
-
-def display_current_hand_for(name, cards, total)
-  display_header_for(name)
-  display_hand_for(cards)
-  display_total_for(total, name)
 end
 
 def display_press_key_with_msg(msg)
@@ -151,14 +151,10 @@ end
 # Store the player's name
   player_name = gets.chomp
 
-begin
-  # VARS
 
-  # Create data structure for deck of cards (52) (this is the previous data structure that was used for the basic implementation)
-  # card_deck = [ 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 10, 10, [1, 11],
-  #               1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 10, 10, [1, 11],
-  #               1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 10, 10, [1, 11],
-  #               1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 10, 10, [1, 11]]
+begin
+
+# VARS
 
  # Create data structure for 2 decks of cards (52 cards in each) - Runs in constant time, I think.
   card_deck = [ {"Hearts" => [1, 2, 3, 4, 5, 6, 7, 8, 9, "Jack", "Queen", "King", "Ace"]},
@@ -169,16 +165,6 @@ begin
                 {"Clubs" => [1, 2, 3, 4, 5, 6, 7, 8, 9, "Jack", "Queen", "King", "Ace"]},
                 {"Diamonds" => [1, 2, 3, 4, 5, 6, 7, 8, 9, "Jack", "Queen", "King", "Ace"]},
                 {"Spades" => [1, 2, 3, 4, 5, 6, 7, 8, 9, "Jack", "Queen", "King", "Ace"]}, ]
-
-  # Create data structure for 2 decks of cards (52 cards in each) - PROGRAMMTICALLLY CREATED. Runs in theta N time. Less efficient, but can add numerous decks easily if required.
-  # cards = [1, 2, 3, 4, 5, 6, 7, 8, 9, "Jack", "Queen", "King", "Ace"]
-  # suits = ["Hearts", "Clubs", "Diamonds", "Spades"]
-  # card_deck = []
-  # 2.times do
-  #   suits.each do |suit|
-  #     card_deck.push({suit => cards})
-  #   end
-  # end
 
   player_won = false
   player_lost = false
@@ -206,12 +192,13 @@ begin
 
   display_current_hand_for(player_name, players_cards, players_total)
 
-  # Deal with early wins and losses
+  # Deal with Blackjack for Player
   if players_total == 21
     player_won = true
     puts "#{player_name} got Blackjack!"
   end
 
+  # If the Player didn't get Blackjack, then let the Player Hit or Stay
   if !player_won
     begin
     # Ask the Player to either HIT or STAY
@@ -238,7 +225,7 @@ begin
   # Ask the Player to perform an action to see the Dealer's hidden card
   display_press_key_with_msg("reveal the Dealer's hidden card")
 
-  # If the dealer got Blackjack, AND the Player didn't get Blackjack, then tell the Player now that the Dealer got Blackjack
+  # If the dealer got Blackjack, AND the Player didn't get Blackjack, then tell the Player loses
   if dealers_total == 21 && !player_won
     player_lost = true
     puts "The Dealer got Blackjack!"
@@ -261,8 +248,6 @@ begin
       if dealers_total > 21
         display_bust_msg_for("The Dealer")
         player_won = true
-      elsif dealers_cards.count == 2 && dealers_total == 21
-        player_lost = true
       end
     end until dealers_total >= 17
   else
