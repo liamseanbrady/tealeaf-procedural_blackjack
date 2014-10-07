@@ -100,9 +100,9 @@ def dealers_first_card(dealers_cards)
   end
 end
 
-def display_header_for(title)
+def display_header_for(name)
     puts " "
-    puts "-  -  -  -  -  #{title}'s Hand  -  -  -  -  -"
+    puts "-  -  -  -  -  #{name}'s Hand  -  -  -  -  -"
 end
 
 def display_dealers_first_card(dealers_cards)
@@ -118,6 +118,12 @@ def display_total_for(total, name)
   puts " "
   puts "#{name}'s total: #{total}"
   puts " "
+end
+
+def display_ui_for(name, cards, total)
+  display_header_for(name)
+  display_hand_for(cards)
+  display_total_for(total, name)
 end
 
 def display_press_key_to(msg)
@@ -184,48 +190,37 @@ begin
   dealers_total = get_dealers_total(dealers_cards)
 
   # Deal with early wins and losses
-
   if players_total == 21
     player_won = true
     puts "#{player_name} got Blackjack!"
   end
 
+  # Display initial state for Dealer and Player
   display_header_for("Dealer")
   display_dealers_first_card(dealers_cards)
 
+  display_ui_for(player_name, players_cards, players_total)
 
-# THIS CAN BE EXTRACTED AS DISPLAY_UI_WITH_INPUT(PARAMS) OR SOMETHING AND USED FOR PLAYER AND DEALER
 
-  display_header_for(player_name)
-  display_hand_for(players_cards)
-  display_total_for(players_total, player_name)
-
-  if !player_won && !player_lost
+  if !player_won
     begin
-    # Ask the player to either HIT or STAY
+    # Ask the Player to either HIT or STAY
       puts "Would you like to Hit or Stay? (h/s)"
       player_decision = gets.chomp
-      # If the player chooses hit
+      # If the Player chooses hit
       if player_decision.downcase == "h"
-      # Pick a random card for the player and add it to their score
+      # Pick a random card for the Player and add it to their score
         deal_card(card_deck, players_cards)
-
         players_total = get_players_total(players_cards, player_name)
-
-        # display player's new score
-        display_header_for(player_name)
-        display_hand_for(players_cards)
-        display_total_for(players_total, player_name)
-      #  If the sum of the player's cards are more than 21 then the player loses
+        # display Player's new score
+        display_ui_for(player_name, players_cards, players_total)
+      #  If the sum of the Player's cards are more than 21 then the player loses
         if players_total > 21
           # end game and player loses
           display_bust_msg_for(player_name)
           player_lost = true
           break
         end
-      # Else
-      else
-      #  save the total value of the player's cards - we're doing this by incrementing each time
       end
     end until player_decision.downcase != "h"
   end
@@ -236,22 +231,16 @@ begin
   # If the player has not already won or lost
   if !player_won && !player_lost && dealers_total < 17
     # Display the Dealer's cards so the player knows what the Dealer's second card was
-    display_header_for("Dealer")
-    display_hand_for(dealers_cards)
-    display_total_for(dealers_total, "Dealer")
+    display_ui_for("Dealer", dealers_cards, dealers_total)
     # Until the sum of the dealer's cards is 17 or more
     begin
     # Ask the player to perform an action to continue the loop.
     display_press_key_to("allow the Dealer to move")
-
     #   The dealer must HIT
       deal_card(card_deck, dealers_cards)
-
       dealers_total = get_dealers_total(dealers_cards)
-
-      display_header_for("Dealer")
-      display_hand_for(dealers_cards)
-      display_total_for(dealers_total, "Dealer")
+      # display Dealer's new score
+      display_ui_for("Dealer", dealers_cards, dealers_total)
     #   If the sum of the dealer's cards is now above 21, then the player wins
       if dealers_total > 21
         display_bust_msg_for("The Dealer")
@@ -261,9 +250,7 @@ begin
       end
     end until dealers_total >= 17
   else
-    display_header_for("Dealer")
-    display_hand_for(dealers_cards)
-    display_total_for(dealers_total, "Dealer")
+    display_ui_for("Dealer", dealers_cards, dealers_total)
   end
 
   # Ask the Player to perform an action to see the result
