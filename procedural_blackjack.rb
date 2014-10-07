@@ -41,23 +41,25 @@ require "pry"
 def deal_first_two_cards(card_deck, cards_array)
   begin
     random_suit = card_deck.sample
-    suit_name = random_suit.keys[0]
-    random_cards = random_suit.values[0]
+    suit_name = random_suit.keys.first
+    random_cards = random_suit.values.first
     random_card = random_cards.sample
     random_card_index = random_cards.index(random_card)
     card_deck.delete_at(random_card_index)
-    cards_array.push([random_card, suit_name])
+    cards_array.push({suit: suit_name, value: random_card})
   end until cards_array.count == 2
 end
 
 def get_players_total(players_cards, player_name)
   ace_count = 0
   players_total = 0
-  players_cards.each do |card_val|
-    if card_val[0] == [1, 11]
+  players_cards.each do |card|
+    if card[:value] == [1, 11]
       ace_count += 1
+    elsif card[:value] == "Jack" || card[:value] == "King" || card[:value] == "Queen"
+      players_total += 10
     else
-      players_total += card_val[0]
+      players_total += card[:value]
     end
   end
   if ace_count == 0
@@ -74,33 +76,31 @@ end
 def get_dealers_total(dealers_cards)
   ace_count = 0
   dealers_total = 0
-  dealers_cards.each do |card_val|
-    if card_val[0] == [1, 11]
+  dealers_cards.each do |card|
+    if card[:value] == [1, 11]
       dealers_total += 11
+    elsif card[:value] == "Jack" || card[:value] == "King" || card[:value] == "Queen"
+      dealers_total += 10
     else
-      dealers_total += card_val[0]
+      dealers_total += card[:value]
     end
   end
     return dealers_total
 end
 
 def dealers_first_card(dealers_cards)
-  if dealers_cards[0][0] == [1, 11]
+  if dealers_cards.first[:value] == [1, 11]
     return 11
   else
-    return dealers_cards[0][0]
+    return dealers_cards.first[:value]
   end
 end
-
 
 # Ask the player for their name
   puts "Please enter your name to play:"
 
 # Store the player's name
   player_name = gets.chomp
-
-# Welcome players to the game
-  puts "****** Welcome to Blackjack, #{player_name} ******"
 
 begin
   # VARS
@@ -111,18 +111,21 @@ begin
   #               1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 10, 10, [1, 11],
   #               1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 10, 10, [1, 11]]
 
-  card_deck = [ {"hearts" => [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 10, 10, [1, 11]]},
-                {"clubs" => [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 10, 10, [1, 11]]},
-                {"diamonds" => [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 10, 10, [1, 11]]},
-                {"spades" => [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 10, 10, [1, 11]]} ]
+  card_deck = [ {"hearts" => [1, 2, 3, 4, 5, 6, 7, 8, 9, "Jack", "Queen", "King", [1, 11]]},
+                {"clubs" => [1, 2, 3, 4, 5, 6, 7, 8, 9, "Jack", "Queen", "King", [1, 11]]},
+                {"diamonds" => [1, 2, 3, 4, 5, 6, 7, 8, 9, "Jack", "Queen", "King", [1, 11]]},
+                {"spades" => [1, 2, 3, 4, 5, 6, 7, 8, 9, "Jack", "Queen", "King", [1, 11]]} ]
 
 
   player_already_won = false
   player_already_lost = false
   dealer_already_lost = false
 
+  # Clear the player's screen for a new game
+  system "clear"
+
   # Welcome players to the game
-  puts "- - - - - - - -  Starting Game...  - - - - - - - -"
+  puts "****** Welcome to Blackjack, #{player_name} ******"  
 
   # Deal two cards to the player (pick two random cards)
   players_cards = []
@@ -142,16 +145,7 @@ begin
     puts "#{player_name} got blackjack!"
   end
 
-  if players_total > 21
-    player_already_lost = true
-  end
-
-  if dealers_total > 21
-    player_already_won = true
-  end
-
-
-  puts "=> Dealer's first card: - #{dealers_first_card(dealers_cards)} of #{dealers_cards[0][1]} -"
+  puts "=> Dealer's first card: - #{dealers_first_card(dealers_cards)} of #{dealers_cards.first[:suit]} -"
   puts "=> #{player_name}'s' hand: #{players_cards}  Card total: #{players_total}"
 
   if !player_already_won && !player_already_lost
@@ -165,13 +159,14 @@ begin
       # puts "#{player_name} chose hit - hero!"
       # Pick a random card for the player and add it to their score
         random_suit = card_deck.sample
-        suit_name = random_suit.keys[0]
-        random_cards = random_suit.values[0]
+        suit_name = random_suit.keys.first
+        random_cards = random_suit.values.first
         random_card = random_cards.sample
         random_card_index = random_cards.index(random_card)
         card_deck.delete_at(random_card_index)
-        players_cards.push([random_card, suit_name])
+        players_cards.push({suit: suit_name, value: random_card})
         players_total = get_players_total(players_cards, player_name)
+
         # display player's new score
         puts "=> #{player_name}'s' card: - #{random_card} of #{suit_name} - "
         puts "=> #{player_name}'s' hand: #{players_cards}  Card total: #{players_total}"
@@ -206,13 +201,14 @@ begin
     #   The dealer must HIT
       puts "=> Dealer's hand: #{dealers_cards}"
       random_suit = card_deck.sample
-      suit_name = random_suit.keys[0]
-      random_cards = random_suit.values[0]
+      suit_name = random_suit.keys.first
+      random_cards = random_suit.values.first
       random_card = random_cards.sample
       random_card_index = random_cards.index(random_card)
       card_deck.delete_at(random_card_index)
-      dealers_cards.push([random_card, suit_name])
+      dealers_cards.push({suit: suit_name, value: random_card})
       dealers_total = get_dealers_total(dealers_cards)
+
       puts "=> Dealer's card is: #{random_card} of #{suit_name}"
       puts "=> Dealer's current total is: #{dealers_total}"
     #   If the sum of the dealer's cards is now above 21, then the player wins
@@ -255,8 +251,12 @@ begin
 
 end until play_again.downcase == "n"
 
+# Clear the console to make the goodbye message obvious
+system "clear"
+
 # Goodbye message
 puts "****** Thanks for playing procedural blackjack, #{player_name} ******"
+puts " "
 
 
 
@@ -321,11 +321,68 @@ puts "****** Thanks for playing procedural blackjack, #{player_name} ******"
       # How to do this?
         # Check the docs for a good array method. We can use the .index method to get the first item that matches the parameter given.
 
-# 7. Need to deal with Aces. Determine whether they should be 1 or 11 based upon the current sum of the players cards.
+# 8. Need to deal with Aces. Determine whether they should be 1 or 11 based upon the current sum of the players cards.
     # First thing I notice here is that the players total should always be the sum of the players_cards array. We should be += it with each once we 
     # get in the loop. We should be adding that card to the players_cards array, then doing each on it and adding them together into players_total 
     # every time round the loop.
     # Ace is always counted as 11 for the dealer
+
+# 9. Make players_cards and dealers_cards more efficient and semantic by storing each card as a hash with two keys - suit, and value.
+    # This should be fairly easy to do. Let's make a mock version of the deal_first_two_cards method using a hash instead of an array to store the cards.
+    # Next, let's look at how this would impact the rest of the code.
+# def deal_first_two_cards(card_deck, cards_array)
+#   begin
+#     random_suit = card_deck.sample
+#     suit_name = random_suit.keys.first
+#     random_cards = random_suit.values.first
+#     random_card = random_cards.sample
+#     random_card_index = random_cards.index(random_card)
+#     card_deck.delete_at(random_card_index)
+#     cards_array.push({suit: #{suit_name}, value: #{random_card}})
+#   end until cards_array.count == 2
+# end
+
+# def get_players_total(players_cards, player_name)
+#   ace_count = 0
+#   players_total = 0
+#   players_cards.each do |card|
+#     if card[value] == [1, 11]
+#       ace_count += 1
+#     else
+#       players_total += card[value]
+#     end
+#   end
+#   if ace_count == 0
+#     return players_total
+#   elsif players_total < 11 && ace_count == 1
+#     puts "#{player_name} has an ace"
+#     return players_total + 11
+#   else
+#     puts "#{player_name} has #{ace_count} ace(s)"
+#     return players_total + ace_count
+#   end
+# end
+
+# def get_dealers_total(dealers_cards)
+#   ace_count = 0
+#   dealers_total = 0
+#   dealers_cards.each do |card|
+#     if card[value] == [1, 11]
+#       dealers_total += 11
+#     else
+#       dealers_total += card[value]
+#     end
+#   end
+#     return dealers_total
+# end
+
+# def dealers_first_card(dealers_cards)
+#   if dealers_cards.first[value] == [1, 11]
+#     return 11
+#   else
+#     return dealers_cards.first[value]
+#   end
+# end
 
 
 # Extra conditions
@@ -351,6 +408,45 @@ puts "****** Thanks for playing procedural blackjack, #{player_name} ******"
   # => If the dealer hits 21, then the dealer wins. 
   # => If the dealer stays, then we compare the sums of the two hands between the player and dealer
   # => The higher value in the comparison wins. EXTRA - We shouldn't need to check for less than 21 here. Game should have ended before if that were the case.
+
+
+# Improving Game Play
+
+  # Here is an example of what the Game Play should look like:
+
+ #  -  -  -  -  -  Dealer's Hand  -  -  -  -  -
+ #                  5 of Clubs
+ #              This card is hidden
+
+ #  -  -  -  -  -  Liam's Hand  -  -  -  -  -
+ #                  5 of Clubs
+ #                  2 of Hearts
+
+ #  Liam's Total = 7
+
+ #  Would you like to Hit or Stay? ( h / s )
+
+ #  -  -  -  -  -  Liam's Hand  -  -  -  -  -
+ #                5 of Clubs
+ #                2 of Hearts
+ #                8 of Diamonds
+
+ #  Liam's Total = 15
+
+ #  Would you like to Hit or Stay? ( h / s )
+
+ # -  -  -  -  -  Liam's Hand  -  -  -  -  -
+ #                5 of Clubs
+ #                2 of Hearts
+ #                8 of Diamonds
+ #                Jack of Clubs
+
+ #  Liam went bust!
+
+ #  ****** Thanks for playing procedural blackjack, Liam ******
+
+
+
 
 
 
